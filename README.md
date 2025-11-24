@@ -53,7 +53,7 @@
 
 ## 📚 项目概述
 
-本项目是一个完整的LangGraph V1学习项目，旨在通过渐进式学习路径帮助您掌握LangGraph框架。项目包含基础概念、中级示例、高级应用和实际案例，使用硅基流动API和Qwen3-Next-80B-A3B-Instruct模型。
+本项目是一个完整的LangGraph V1学习项目，旨在通过渐进式学习路径帮助你掌握LangGraph框架。项目包含基础概念、中级示例、高级应用和实际案例，使用硅基流动API和Qwen3-Next-80B-A3B-Instruct模型。
 
 ## 🎯 学习目标
 
