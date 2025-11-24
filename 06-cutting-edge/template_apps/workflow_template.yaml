@@ -1,0 +1,119 @@
+# 通用工作流模板
+
+name: "general_workflow"
+description: "一个通用的、可配置的业务工作流模板"
+
+# 状态模式定义
+state_schema:
+  input_data:
+    type: "dict"
+    description: "输入数据"
+  processed_data:
+    type: "dict"
+    default: {}
+    description: "处理后的数据"
+  validation_result:
+    type: "dict"
+    default: {}
+    description: "验证结果"
+  workflow_status:
+    type: "str"
+    default: "initialized"
+    description: "工作流状态"
+  errors:
+    type: "list"
+    default: []
+    description: "错误列表"
+  metadata:
+    type: "dict"
+    default: {}
+    description: "元数据信息"
+
+# 节点定义
+nodes:
+  - name: "data_validation"
+    description: "验证输入数据"
+    function_path: "template_apps.workflow_nodes.validate_data"
+    parameters:
+      strict_mode: false
+      required_fields: ["id", "type"]
+    retry_config:
+      max_retries: 1
+
+  - name: "data_preprocessing"
+    description: "预处理数据"
+    function_path: "template_apps.workflow_nodes.preprocess_data"
+    parameters:
+      clean_empty: true
+      normalize: true
+
+  - name: "business_logic"
+    description: "执行业务逻辑"
+    function_path: "template_apps.workflow_nodes.execute_business_logic"
+    parameters:
+      parallel_execution: false
+
+  - name: "quality_check"
+    description: "质量检查"
+    function_path: "template_apps.workflow_nodes.quality_check"
+    parameters:
+      quality_threshold: 0.8
+
+  - name: "result_formatting"
+    description: "格式化输出结果"
+    function_path: "template_apps.workflow_nodes.format_results"
+    parameters:
+      output_format: "json"
+
+  - name: "notification"
+    description: "发送通知"
+    function_path: "template_apps.workflow_nodes.send_notification"
+    parameters:
+      channels: ["email"]
+      async_send: true
+
+# 边定义
+edges:
+  - from: START
+    to: "data_validation"
+
+  - from: "data_validation"
+    to: "data_preprocessing"
+    condition: "template_apps.workflow_conditions.is_validation_passed"
+
+  - from: "data_validation"
+    to: "notification"
+    condition: "template_apps.workflow_conditions.is_validation_failed"
+
+  - from: "data_preprocessing"
+    to: "business_logic"
+
+  - from: "business_logic"
+    to: "quality_check"
+    condition: "template_apps.workflow_conditions.has_business_result"
+
+  - from: "business_logic"
+    to: "notification"
+    condition: "template_apps.workflow_conditions.business_failed"
+
+  - from: "quality_check"
+    to: "result_formatting"
+    condition: "template_apps.workflow_conditions.quality_passed"
+
+  - from: "quality_check"
+    to: "notification"
+    condition: "template_apps.workflow_conditions.quality_failed"
+
+  - from: "result_formatting"
+    to: END
+
+  - from: "notification"
+    to: END
+
+# 配置
+checkpoint_config:
+  enabled: true
+  save_intermediate_results: true
+
+entry_point: "data_validation"
+exit_points: ["result_formatting", "notification"]

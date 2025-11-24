@@ -1,0 +1,107 @@
+# 智能聊天机器人模板
+
+name: "intelligent_chatbot"
+description: "一个具备多轮对话、意图识别和个性化回复的智能聊天机器人模板"
+
+# 状态模式定义
+state_schema:
+  messages:
+    type: "list"
+    description: "对话历史消息列表"
+  current_input:
+    type: "str"
+    description: "当前用户输入"
+  intent:
+    type: "str"
+    default: "unknown"
+    description: "识别的用户意图"
+  response:
+    type: "str"
+    default: ""
+    description: "生成的回复"
+  user_profile:
+    type: "dict"
+    default: {}
+    description: "用户画像信息"
+  context:
+    type: "dict"
+    default: {}
+    description: "对话上下文"
+
+# 节点定义
+nodes:
+  - name: "input_analysis"
+    description: "分析用户输入和意图"
+    function_path: "template_apps.bot_nodes.analyze_input"
+    parameters:
+      max_history: 10
+    retry_config:
+      max_retries: 2
+
+  - name: "intent_recognition"
+    description: "识别用户意图"
+    function_path: "template_apps.bot_nodes.recognize_intent"
+    parameters:
+      confidence_threshold: 0.7
+    conditions:
+      fallback_intent: "general_chat"
+
+  - name: "context_retrieval"
+    description: "检索相关上下文信息"
+    function_path: "template_apps.bot_nodes.retrieve_context"
+    parameters:
+      max_context_items: 5
+
+  - name: "response_generation"
+    description: "生成个性化回复"
+    function_path: "template_apps.bot_nodes.generate_response"
+    parameters:
+      max_length: 500
+      temperature: 0.7
+
+  - name: "response_refinement"
+    description: "优化和完善回复"
+    function_path: "template_apps.bot_nodes.refine_response"
+    parameters:
+      style: "friendly"
+
+  - name: "context_update"
+    description: "更新对话上下文"
+    function_path: "template_apps.bot_nodes.update_context"
+    parameters:
+      save_history: true
+
+# 边定义
+edges:
+  - from: START
+    to: "input_analysis"
+
+  - from: "input_analysis"
+    to: "intent_recognition"
+
+  - from: "intent_recognition"
+    to: "context_retrieval"
+    condition: "template_apps.bot_conditions.should_retrieve_context"
+
+  - from: "intent_recognition"
+    to: "response_generation"
+
+  - from: "context_retrieval"
+    to: "response_generation"
+
+  - from: "response_generation"
+    to: "response_refinement"
+
+  - from: "response_refinement"
+    to: "context_update"
+
+  - from: "context_update"
+    to: END
+
+# 配置
+checkpoint_config:
+  enabled: true
+  persist_history: true
+
+entry_point: "input_analysis"
+exit_points: ["context_update"]
