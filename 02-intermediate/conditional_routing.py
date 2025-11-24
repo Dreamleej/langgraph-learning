@@ -50,7 +50,6 @@ class RouteDecision(TypedDict):
     confidence: float
 
 # 2. 数据分类和评估节点
-
 def content_classifier(state: ConditionalState) -> ConditionalState:
     """
     内容分类节点 - 分析内容类型
@@ -148,7 +147,6 @@ def quality_evaluator(state: ConditionalState) -> ConditionalState:
     }
 
 # 3. 处理节点
-
 def urgent_handler(state: ConditionalState) -> ConditionalState:
     """
     紧急处理节点
@@ -206,7 +204,6 @@ def auto_reject_handler(state: ConditionalState) -> ConditionalState:
     }
 
 # 4. 高级条件路由函数
-
 def route_by_priority_and_quality(state: ConditionalState) -> Literal["urgent", "standard", "quality_review", "reject"]:
     """
     基于优先级和质量的复合路由决策
@@ -274,7 +271,6 @@ def secondary_routing(state: ConditionalState) -> Literal["escalate", "delegate"
         return "archive"
 
 # 5. 二级处理节点
-
 def escalate_handler(state: ConditionalState) -> ConditionalState:
     """升级处理"""
     print_step("升级处理")
@@ -297,7 +293,6 @@ def archive_handler(state: ConditionalState) -> ConditionalState:
     return {"processing_path": processing_path}
 
 # 6. 构建高级条件路由工作流
-
 def build_advanced_routing_workflow():
     """
     构建高级条件路由工作流
@@ -364,7 +359,6 @@ def build_advanced_routing_workflow():
     return workflow.compile()
 
 # 7. 演示函数
-
 def demo_basic_routing():
     """基础路由演示"""
     print_step("基础条件路由演示")

@@ -11,6 +11,7 @@
 4. 如何运行工作流
 """
 
+from langgraph.graph.state import CompiledStateGraph, StateGraph
 from typing import TypedDict
 from langgraph.graph import StateGraph, END
 import sys
@@ -25,21 +26,19 @@ class GreetingState(TypedDict):
     """
     问候工作流的状态定义
     
-    这里我们定义了三个字段：
+    这里我们定义了两个字段：
     - name: 要问候的人名
     - greeting: 生成的问候语
-    - language: 问候语言
     """
     name: str
     greeting: str
-    language: str
 
 # 2. 定义节点函数
 def create_greeting(state: GreetingState) -> GreetingState:
     """
     创建问候语的节点
     
-    输入：包含name和language的状态
+    输入：包含name的状态
     输出：更新了greeting的状态
     
     这是LangGraph节点的标准写法：
@@ -47,18 +46,10 @@ def create_greeting(state: GreetingState) -> GreetingState:
     2. 处理数据
     3. 返回更新后的state
     """
-    name = state.get("name", "世界")
-    language = state.get("language", "中文")
+    name: str = state.get("name", "世界")
     
-    # 根据语言创建不同的问候语
-    if language == "中文":
-        greeting = f"你好，{name}！欢迎使用LangGraph！"
-    elif language == "English":
-        greeting = f"Hello, {name}! Welcome to LangGraph!"
-    elif language == "日本語":
-        greeting = f"こんにちは、{name}さん！LangGraphへようこそ！"
-    else:
-        greeting = f"你好，{name}！"
+    # 创建简单的问候语
+    greeting = f"你好，{name}！欢迎使用LangGraph！"
     
     print_step(f"生成问候语: {greeting}")
     
@@ -93,7 +84,7 @@ def build_greeting_graph():
     print_step("构建LangGraph状态图")
     
     # 创建状态图实例
-    workflow = StateGraph(GreetingState)
+    workflow: StateGraph = StateGraph(GreetingState)
     
     # 添加节点
     workflow.add_node("create_greeting", create_greeting)
@@ -127,14 +118,13 @@ def run_demo():
     # 准备初始状态
     initial_state = {
         "name": "LangGraph学习者",
-        "language": "中文",
         "greeting": ""
     }
     
     print(f"初始状态: {initial_state}")
     
     try:
-        # 运行工作流
+        # 运行工作流(阻塞式)
         result = app.invoke(initial_state)
         
         print_step("工作流执行完成")
@@ -150,21 +140,15 @@ def interactive_demo():
     """
     print_step("交互式LangGraph演示")
     
-    app = build_greeting_graph()
+    app: CompiledStateGraph = build_greeting_graph()
     
     print("\n请输入以下信息：")
     name = input("你的名字: ").strip()
     if not name:
         name = "朋友"
     
-    print("可选语言: 中文, English, 日本語")
-    language = input("选择语言 (默认: 中文): ").strip()
-    if not language:
-        language = "中文"
-    
     initial_state = {
         "name": name,
-        "language": language,
         "greeting": ""
     }
     
@@ -186,11 +170,10 @@ def streaming_demo():
     
     initial_state = {
         "name": "流式用户",
-        "language": "中文",
         "greeting": ""
     }
     
-    print("开始流式执行...")
+    print("开始流式执行(流式)...")
     
     try:
         for output in app.stream(initial_state):
@@ -208,13 +191,13 @@ if __name__ == "__main__":
     print("=" * 50)
     
     while True:
-        print("\n请选择演示模式:")
+        print("请选择演示模式:")
         print("1. 基本演示")
         print("2. 交互式演示")
         print("3. 流式执行演示")
         print("0. 退出")
         
-        choice = input("\n请输入选择 (0-3): ").strip()
+        choice = input("请输入选择 (0-3): ").strip()
         
         if choice == "1":
             run_demo()

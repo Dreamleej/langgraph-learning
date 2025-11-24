@@ -11,12 +11,11 @@
 4. 用户界面交互
 """
 
-from typing import TypedDict, Literal, Dict, Any, Optional
+from typing import TypedDict, Literal, Dict, Any
 from langgraph.graph import StateGraph, END
 import sys
 import os
 import time
-import json
 
 # 添加父目录到路径
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -174,7 +173,7 @@ def human_approval_node(state: HumanLoopState) -> HumanLoopState:
     task_type = state.get("task_type", "")
     
     print(f"\n{'='*50}")
-    print(f"📋 审批任务")
+    print("📋 审批任务")
     print(f"{'='*50}")
     print(f"任务ID: {task_id}")
     print(f"任务类型: {task_type}")
@@ -237,17 +236,21 @@ def human_input_node(state: HumanLoopState) -> HumanLoopState:
     
     task_data = state.get("task_data", {})
     generated_content = task_data.get("generated_content", "")
+    final_content = task_data.get("final_content", "")
     modification_count = state.get("modification_count", 0)
     
     print(f"\n{'='*50}")
-    print(f"✏️ 内容编辑")
+    print("✏️ 内容编辑")
     print(f"{'='*50}")
     print(f"当前修改次数: {modification_count}")
     
-    if generated_content:
+    # 优先显示最终内容（已编辑的内容），如果没有则显示生成的内容
+    current_content = final_content if final_content else generated_content
+    
+    if current_content:
         print(f"\n当前内容:")
         print("-" * 30)
-        print(generated_content)
+        print(current_content)
         print("-" * 30)
     
     print(f"\n编辑选项:")
@@ -280,11 +283,11 @@ def human_input_node(state: HumanLoopState) -> HumanLoopState:
         final_content = "\n".join(lines)
         
     elif choice == "3":
-        final_content = generated_content
+        final_content = current_content
     
     else:
         print("无效选择，使用当前内容")
-        final_content = generated_content
+        final_content = current_content
     
     print(f"\n输入的内容长度: {len(final_content)} 字符")
     
@@ -309,7 +312,7 @@ def human_validation_node(state: HumanLoopState) -> HumanLoopState:
     quality_score = task_data.get("quality_score", 0)
     
     print(f"\n{'='*50}")
-    print(f"✅ 人工验证")
+    print("✅ 人工验证")
     print(f"{'='*50}")
     print(f"系统质量分数: {quality_score:.2f}")
     
@@ -508,21 +511,20 @@ def build_content_creation_workflow():
     
     # 添加节点
     workflow.add_node("generate", content_generator)
-    workflow.add_node("human_input", human_input_node)
-    workflow.add_node("check_limit", content_generator)  # 用作检查点
+    workflow.add_node("human_input_node", human_input_node)
     workflow.add_node("publish", content_publisher)
     
     # 设置入口点
     workflow.set_entry_point("generate")
     
     # 添加边
-    workflow.add_edge("generate", "human_input")
+    workflow.add_edge("generate", "human_input_node")
     
     workflow.add_conditional_edges(
-        "human_input",
+        "human_input_node",
         check_modification_limit,
         {
-            "continue": "human_input",  # 继续修改
+            "continue": "human_input_node",  # 继续修改
             "end": "publish"  # 发布
         }
     )
