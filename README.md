@@ -75,7 +75,7 @@
 langgraph-learning/
 ├── 01-basics/           # 🟢 基础概念
 │   ├── hello_world.py   # 第一个LangGraph程序
-│   ├── state_management.py # 状态管理
+│   ├── llm_tool_agent.py # LLM工具代理
 │   ├── nodes_edges.py   # 节点和边
 │   └── README.md
 ├── 02-intermediate/     # 🟡 中级示例
@@ -122,6 +122,13 @@ langgraph-learning/
 git clone <repository-url>
 cd langgraph-learning
 
+# 激活虚拟环境
+# Windows
+venv\Scripts\activate
+
+# Linux/macOS
+source venv/bin/activate
+
 # 安装依赖
 pip install -r requirements.txt
 
@@ -137,6 +144,7 @@ pip install -r requirements.txt
    - 从第一个LangGraph程序开始
    - 理解状态管理
    - 掌握节点和边的概念
+   - 实现LLM工具代理
 
 2. **🟡 中级示例** (`02-intermediate/`)
    - 学习条件路由
@@ -159,7 +167,7 @@ pip install -r requirements.txt
 
 6. **🚀 前沿技术** (`06-cutting-edge/`)
    - 本地服务器：FastAPI部署、WebSocket通信、API设计
-   - 模板框架：YAML配置、动态构建、热重载
+   - 模板框架：YAML配置、动态构建、热重载、类型安全
    - LangSmith集成：实时监控、性能分析、错误追踪
    - RAG系统：向量存储、语义检索、增强生成
    - 多模态AI：文本图像音频、跨模态理解、智能融合
